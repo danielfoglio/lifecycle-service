@@ -20,6 +20,7 @@ import javax.ws.rs.PathParam
 import javax.ws.rs.Produces
 import javax.ws.rs.core.Response
 
+import static javax.ws.rs.core.Response.accepted
 import static org.hamcrest.Matchers.notNullValue
 import static org.valid4j.Assertive.require
 import static org.valid4j.matchers.ArgumentMatchers.notEmptyString
@@ -58,7 +59,7 @@ class ComponentResource {
     require name, notEmptyString()
     log.debug 'executing get component for [{}]', name
 
-    return Optional.empty()
+    return Optional.ofNullable(componentApi.getComponent(name))
   }
 
   /**
@@ -72,7 +73,7 @@ class ComponentResource {
   Map<String, Component> getComponentUpgradeAvailability() {
     log.debug 'executing get component upgrade availability'
 
-    return [:]
+    return componentCache
   }
 
   /**
@@ -97,7 +98,8 @@ class ComponentResource {
     require user, notNullValue()
     log.debug 'executing apply component version for [{}] [{}]', name, componentVersionRequest.version
 
-    return null
+    componentApi.applyComponent(name, componentVersionRequest.version)
+    return accepted().location("/component/${name}".toURI()).build()
   }
 
   /**

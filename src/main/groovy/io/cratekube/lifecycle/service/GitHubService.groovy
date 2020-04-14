@@ -1,15 +1,19 @@
 package io.cratekube.lifecycle.service
 
+import groovy.util.logging.Slf4j
 import io.cratekube.lifecycle.api.GitHubApi
+import io.cratekube.lifecycle.api.exception.FailedException
 import io.cratekube.lifecycle.api.exception.NotFoundException
 
 import javax.inject.Inject
 import javax.ws.rs.client.Client
+import groovy.xml.XmlSlurper
 
 import static org.hamcrest.Matchers.notNullValue
 import static org.valid4j.Assertive.require
 import static org.valid4j.matchers.ArgumentMatchers.notEmptyString
 
+@Slf4j
 class GitHubService implements GitHubApi {
   Client client
 
@@ -21,12 +25,14 @@ class GitHubService implements GitHubApi {
   @Override
   String getLatestVersionFromAtomFeed(String atomFeedUrl) {
     require atomFeedUrl, notEmptyString()
-    /**
-     * def location = 'https://github.com/cratekube/cluster-mgmt-service/releases.atom'
-     * def result = new XmlSlurper().parse(location)
-     * result.entry.each { print it.id.toString()[it.id.toString().lastIndexOf('/')+1..-1] }
-     */
-    return null
+
+    def result = new XmlSlurper().parse(atomFeedUrl)
+    def latest = result.entry.isEmpty() ? null : result.entry.first()
+    if (!latest) {
+      throw new FailedException("Cannot retrieve the latest version. There are no releases at [${atomFeedUrl}].")
+    }
+    def id = latest.id.toString()
+    return id[id.lastIndexOf('/')+1..-1]
   }
 
   @Override
@@ -34,6 +40,12 @@ class GitHubService implements GitHubApi {
     require component, notEmptyString()
     require version, notEmptyString()
 
-    return null
+    String deploymentFileLocation = "https://raw.githubusercontent.com/cratekube/${component}/${version}/deployment.yml"
+    try {
+      return client.target(deploymentFileLocation).request().get(String)
+    } catch (Exception ex) {
+      log.debug(ex.toString())
+      throw new NotFoundException("Cannot find deployable template for component [${component}] version [${version}].")
+    }
   }
 }

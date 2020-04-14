@@ -1,10 +1,10 @@
 package io.cratekube.lifecycle.resources
 
 import io.cratekube.lifecycle.api.ComponentApi
+import io.cratekube.lifecycle.api.exception.FailedException
 import io.cratekube.lifecycle.auth.User
 import io.cratekube.lifecycle.model.Component
 import org.valid4j.errors.RequireViolation
-import spock.lang.PendingFeature
 import spock.lang.Specification
 import spock.lang.Subject
 import io.cratekube.lifecycle.resources.ComponentResource.ComponentVersionRequest
@@ -50,20 +50,42 @@ class ComponentResourceSpec extends Specification {
     name << [null, '']
   }
 
-  @PendingFeature
   def 'getComponent should return valid component'() {
     given:
-    def name = 'test-name'
+    def testName = 'test-name'
+    def testConfig = 'test-config'
+    def testCurrentVersion = 'test-current-version'
+    def testLatestVersion = 'test-latest-version'
+    def component = new Component(testName, testConfig, testCurrentVersion, testLatestVersion)
+    componentApi.getComponent(testName) >> component
 
     when:
-    def result = subject.getComponent(name)
+    def result = subject.getComponent(testName)
 
     then:
     expect result, notNullValue()
     expect result.present, equalTo(true)
+    verifyAll(result.get()) {
+      expect testName, equalTo(component.name)
+      expect testConfig, equalTo(component.config)
+      expect testCurrentVersion, equalTo(component.currentVersion)
+      expect testLatestVersion, equalTo(component.latestVersion)
+    }
   }
 
-  @PendingFeature
+  def 'getComponent should return empty if no component exists'() {
+    given:
+    def testName = 'test-name'
+    componentApi.getComponent(testName) >> null
+
+    when:
+    def result = subject.getComponent(testName)
+
+    then:
+    expect result, notNullValue()
+    expect result.present, equalTo(false)
+  }
+
   def 'getComponentUpgradeAvailability should return component cache'() {
     given:
     def name = 'test-name'
@@ -71,7 +93,7 @@ class ComponentResourceSpec extends Specification {
     def currentVersion = 'test-current-version'
     def latestVersion = 'test-latest-version'
     def value = new Component(name, config, currentVersion, latestVersion)
-    componentCache = [(name): value]
+    componentCache[name] = value
 
     when:
     def result = subject.componentUpgradeAvailability
@@ -97,8 +119,7 @@ class ComponentResourceSpec extends Specification {
     'test-name' | new ComponentVersionRequest('test-version') | null
   }
 
-  @PendingFeature
-  def 'applyComponentVersion should return  valid response'() {
+  def 'applyComponentVersion should return valid response'() {
     given:
     def name = 'test-name'
     def version = 'test-version'
@@ -109,9 +130,25 @@ class ComponentResourceSpec extends Specification {
     def response = subject.applyComponentVersion(name, componentVersionRequest, user)
 
     then:
+    1 * componentApi.applyComponent(name, version)
     expect response, notNullValue()
     expect response.status, equalTo(202)
     expect response.location, notNullValue()
     expect response.location.path, endsWith(name)
+  }
+
+  def 'applyComponentVersion should return invalid response if error occurs'() {
+    given:
+    def name = 'test-name'
+    def version = 'test-version'
+    def componentVersionRequest = new ComponentVersionRequest(version)
+    def user = new User()
+    componentApi.applyComponent(name, version) >> {throw new FailedException()}
+
+    when:
+    subject.applyComponentVersion(name, componentVersionRequest, user)
+
+    then:
+    thrown FailedException
   }
 }

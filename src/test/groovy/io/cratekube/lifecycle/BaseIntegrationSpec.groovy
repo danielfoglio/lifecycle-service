@@ -5,6 +5,8 @@ import io.cratekube.lifecycle.api.ComponentApi
 import io.cratekube.lifecycle.api.GitHubApi
 import io.cratekube.lifecycle.api.KubectlApi
 import io.cratekube.lifecycle.api.ProcessExecutor
+import io.cratekube.lifecycle.model.Component
+import io.cratekube.lifecycle.modules.annotation.ComponentCache
 import org.spockframework.mock.MockUtil
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import spock.lang.Specification
@@ -22,13 +24,14 @@ abstract class BaseIntegrationSpec extends Specification {
   MockUtil mockUtil = new MockUtil()
   @Inject Client client
   @Inject AppConfig config
-  @Inject ComponentApi components
+  @Inject ComponentApi componentApi
   @Inject ProcessExecutor kubectlCmd
   @Inject KubectlApi kubectlApi
   @Inject GitHubApi gitHubApi
+  @Inject @ComponentCache Map<String, Component> componentCache
 
   def setup() {
-    [components, kubectlCmd, kubectlApi, gitHubApi].findAll { mockUtil.isMock(it) }
+    [componentApi, kubectlCmd, kubectlApi, gitHubApi].findAll { mockUtil.isMock(it) }
       .each { mockUtil.attachMock(it, this) }
   }
   /**

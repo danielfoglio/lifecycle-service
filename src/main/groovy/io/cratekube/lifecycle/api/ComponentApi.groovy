@@ -1,6 +1,7 @@
 package io.cratekube.lifecycle.api
 
 import io.cratekube.lifecycle.api.exception.FailedException
+import io.cratekube.lifecycle.api.exception.NotFoundException
 import io.cratekube.lifecycle.model.Component
 
 /**
@@ -25,6 +26,8 @@ interface ComponentApi {
    *
    * @param name {@code non-empty} component name
    * @param version {@code non-empty} component version
+   * @throws FailedException
+   * @throws NotFoundException
    */
-  void applyComponent(String name, String version) throws FailedException
+  void applyComponent(String name, String version) throws FailedException, NotFoundException
 }

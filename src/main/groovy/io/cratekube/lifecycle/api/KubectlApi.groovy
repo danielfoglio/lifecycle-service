@@ -19,7 +19,7 @@ interface KubectlApi {
    * Retrieves kubernetes resources.
    *
    * @param arguments {@code non-empty} string argument list
-   * @return the json formatted output
+   * @return the json formatted output or null if no resource exists
    *
    * @throws FailedException
    */
