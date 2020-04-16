@@ -25,13 +25,10 @@ abstract class BaseIntegrationSpec extends Specification {
   @Inject Client client
   @Inject AppConfig config
   @Inject ComponentApi componentApi
-  @Inject ProcessExecutor kubectlCmd
-  @Inject KubectlApi kubectlApi
-  @Inject GitHubApi gitHubApi
   @Inject @ComponentCache Map<String, Component> componentCache
 
   def setup() {
-    [componentApi, kubectlCmd, kubectlApi, gitHubApi].findAll { mockUtil.isMock(it) }
+    [componentApi].findAll { mockUtil.isMock(it) }
       .each { mockUtil.attachMock(it, this) }
   }
   /**

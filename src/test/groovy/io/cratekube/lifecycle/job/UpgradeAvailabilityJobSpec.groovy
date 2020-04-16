@@ -1,9 +1,11 @@
 package io.cratekube.lifecycle.job
 
 import io.cratekube.lifecycle.AppConfig
+import io.cratekube.lifecycle.api.ComponentApi
 import io.cratekube.lifecycle.api.GitHubApi
 import io.cratekube.lifecycle.api.KubectlApi
 import io.cratekube.lifecycle.model.Component
+import org.quartz.JobExecutionContext
 import org.valid4j.errors.RequireViolation
 import spock.lang.PendingFeature
 import spock.lang.Specification
@@ -16,38 +18,42 @@ import static spock.util.matcher.HamcrestSupport.expect
 class UpgradeAvailabilityJobSpec extends Specification {
   @Subject UpgradeAvailabilityJob subject
   Map<String, Component> componentCache
-  KubectlApi kubectlApi
+  ComponentApi componentApi
   AppConfig config
-  GitHubApi gitHubApi
+
   def setup() {
     componentCache = [:]
-    kubectlApi = Mock()
-    config = new AppConfig()
-    gitHubApi = Mock()
-    subject = new UpgradeAvailabilityJob(componentCache, kubectlApi, config, gitHubApi)
+    componentApi = Mock()
+    config = new AppConfig(managedComponents: [('test-name'): true])
+    subject = new UpgradeAvailabilityJob(componentCache, componentApi, config)
   }
 
   def 'should require valid constructor params'() {
     when:
-    new UpgradeAvailabilityJob(cache, kube, conf, git)
+    new UpgradeAvailabilityJob(cache, comp, conf)
 
     then:
     thrown RequireViolation
 
     where:
-    cache               | kube            | conf        | git
-    null                | null            | null        | null
-    this.componentCache | null            | null        | null
-    this.componentCache | this.kubectlApi | null        | null
-    this.componentCache | this.kubectlApi | this.config | null
+    cache               | comp              | conf
+    null                | null              | null
+    this.componentCache | null              | null
+    this.componentCache | this.componentApi | null
   }
 
-  @PendingFeature
   def 'doJob should update component cache'() {
+    given:
+    def nm = 'test-name'
+    def curVersion = '1.0.0'
+    def cfg = 'test-config'
+    def latVersion = '1.0.1'
+    def component = new Component(nm, cfg, curVersion, latVersion)
+    componentApi.getComponent(_) >> component
     when:
-    subject.doJob(_)
+    subject.doJob(_ as  JobExecutionContext)
 
     then:
-    expect componentCache, hasEntry(anything(), anything())
+    expect componentCache, hasEntry(nm, component)
   }
 }

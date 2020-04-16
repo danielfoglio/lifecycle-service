@@ -29,10 +29,13 @@ kubeconfigLocation: ${KUBE_CONFIG_LOCATION:-/app/kube/internal-config}
 jobs:
   upgradeAvailabilityJob: ${JOB_EXECUTION_FREQUENCY:-10min}
 
+github:
+  orgHome: ${GITHUB_ORG_HOME:-https://github.com/cratekube}
+  orgBaseRawHome: ${GITHUB_ORG_RAW_HOME:-https://raw.githubusercontent.com/cratekube}
+
 managedComponents:
-  cluster-mgmt-service: https://github.com/cratekube/cluster-mgmt-service/releases.atom
-  cloud-mgmt-service: https://github.com/cratekube/cloud-mgmt-service/releases.atom
-  lifecycle-service: https://github.com/cratekube/lifecycle-service/releases.atom
-  # k8s yaml 'template' files will contain an 'annotation' for version.
-  # whatever this key is should coincide with top level k8s resource name for retrieval purposes
-  # lifecycle-service template needs to account for deploying itself
+  cluster-mgmt-service: true
+  cloud-mgmt-service: true
+  lifecycle-service: true
+  # whatever this key is should coincide with k8s deployment resource selector name for retrieval purposes
+  # lifecycle-service  needs to account for deploying itself

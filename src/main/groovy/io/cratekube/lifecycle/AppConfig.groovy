@@ -1,6 +1,7 @@
 package io.cratekube.lifecycle
 
 import de.spinscale.dropwizard.jobs.JobConfiguration
+import groovy.transform.Immutable
 import io.cratekube.lifecycle.auth.ApiKeyAuthConfig
 import io.dropwizard.Configuration
 import io.dropwizard.client.JerseyClientConfiguration
@@ -39,5 +40,20 @@ class AppConfig extends Configuration implements JobConfiguration {
 
   @Valid
   @NotEmpty
-  Map<String , String> managedComponents
+  Map<String , Boolean> managedComponents
+
+  @Valid
+  @NotNull
+  GitHubConfig github
+}
+
+@Immutable
+class GitHubConfig {
+  /** location of the organization home */
+  @NotEmpty
+  String orgHome
+
+  /** base location of the organizations raw content */
+  @NotEmpty
+  String orgBaseRawHome
 }

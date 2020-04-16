@@ -2,6 +2,7 @@ package io.cratekube.lifecycle.modules
 
 import com.google.inject.Provides
 import io.cratekube.lifecycle.AppConfig
+import io.cratekube.lifecycle.GitHubConfig
 import io.cratekube.lifecycle.api.ComponentApi
 import io.cratekube.lifecycle.api.GitHubApi
 import io.cratekube.lifecycle.api.KubectlApi
@@ -28,6 +29,7 @@ class ProductionModule extends DropwizardAwareModule<AppConfig> {
     bind ProcessExecutor to KubectlCommand
     bind KubectlApi to KubectlService
     bind GitHubApi to GitHubService
+    bind GitHubConfig toInstance configuration().github
   }
 
   /**

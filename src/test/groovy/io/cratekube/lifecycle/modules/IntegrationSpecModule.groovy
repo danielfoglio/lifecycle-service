@@ -17,9 +17,6 @@ class IntegrationSpecModule extends DropwizardAwareModule<AppConfig> {
   @Override
   protected void configure() {
     bind ComponentApi toInstance mock(ComponentApi)
-    bind ProcessExecutor toInstance mock(ProcessExecutor)
-    bind KubectlApi toInstance mock(KubectlApi)
-    bind GitHubApi toInstance mock(GitHubApi)
   }
 
   def <T> T mock(Class<T> type) {

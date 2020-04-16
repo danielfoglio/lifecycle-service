@@ -17,7 +17,7 @@ import static spock.util.matcher.HamcrestSupport.expect
 class ComponentResourceIntegrationSpec extends BaseIntegrationSpec {
   String basePath = '/component'
 
-  def 'should get successful response when executing GET for a component'() {
+  def 'should return successful response when executing GET for a component'() {
     given:
     def testName = 'test-name'
     def testConfig = 'test-config'
@@ -52,7 +52,7 @@ class ComponentResourceIntegrationSpec extends BaseIntegrationSpec {
     expect response.status, equalTo(404)
   }
 
-  def 'should return component upgrade availability'() {
+  def 'should return successfule response and component upgrade availability'() {
     given:
     def testName = 'test-name'
     def testConfig = 'test-config'
@@ -72,7 +72,7 @@ class ComponentResourceIntegrationSpec extends BaseIntegrationSpec {
     }
   }
 
-  def 'should apply specified component version'() {
+  def 'should return succesfule response and apply specified component version'() {
     given:
     def testName = 'test-name'
     def testVersion = 'test-version'
@@ -89,7 +89,7 @@ class ComponentResourceIntegrationSpec extends BaseIntegrationSpec {
     expect response.location.path, endsWith(testName)
   }
 
-  def 'should return 500 error when failure applying specified component version'() {
+  def 'should return 500 error response when failure applying specified component version'() {
     given:
     def testName = 'test-name'
     def testVersion = 'test-version'

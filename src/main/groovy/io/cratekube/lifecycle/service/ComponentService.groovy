@@ -1,6 +1,7 @@
 package io.cratekube.lifecycle.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import groovy.util.logging.Slf4j
 import io.cratekube.lifecycle.AppConfig
 import io.cratekube.lifecycle.api.ComponentApi
 import io.cratekube.lifecycle.api.GitHubApi
@@ -8,7 +9,6 @@ import io.cratekube.lifecycle.api.KubectlApi
 import io.cratekube.lifecycle.api.exception.FailedException
 import io.cratekube.lifecycle.api.exception.NotFoundException
 import io.cratekube.lifecycle.model.Component
-import io.cratekube.lifecycle.modules.annotation.ComponentCache
 
 import javax.inject.Inject
 
@@ -16,40 +16,38 @@ import static org.hamcrest.Matchers.notNullValue
 import static org.valid4j.Assertive.require
 import static org.valid4j.matchers.ArgumentMatchers.notEmptyString
 
+@Slf4j
 class ComponentService implements ComponentApi {
-  Map<String, Component> componentCache
   KubectlApi kubectlApi
   GitHubApi gitHubApi
   ObjectMapper objectMapper
-  AppConfig config
 
   @Inject
-  ComponentService(@ComponentCache Map<String, Component> componentCache, KubectlApi kubectlApi, GitHubApi gitHubApi, ObjectMapper objectMapper, AppConfig config) {
-    this.componentCache = require componentCache, notNullValue()
+  ComponentService(KubectlApi kubectlApi, GitHubApi gitHubApi, ObjectMapper objectMapper) {
     this.kubectlApi = require kubectlApi, notNullValue()
     this.gitHubApi = require gitHubApi, notNullValue()
     this.objectMapper = require objectMapper, notNullValue()
-    this.config = require config, notNullValue()
   }
 
-  Component getComponent(String name, boolean checkCache = true) {
+  Component getComponent(String name) {
     require name, notEmptyString()
 
-    if (checkCache && componentCache[name]) {
-      return componentCache[name]
-    }
-
-    def stringResource = kubectlApi.get(name)
-    if (!stringResource) {
-      return null
-    }
-
+    def currentVersion = null
+    def config = null
+    def stringResource = kubectlApi.getPodJsonByNameSelector(name)
     def jsonResource = objectMapper.readValue(stringResource, Map)
-    def image = jsonResource.items[0].spec.containers[0].image
-    def currentVersion = image.split(':')[1] as String
-    def latestVersion = gitHubApi.getLatestVersionFromAtomFeed(config.managedComponents[name])
-    def component = new Component(name, stringResource, currentVersion, latestVersion)
-    return componentCache[name] = component
+    if (jsonResource.items) {
+      def image = jsonResource.items[0].spec.containers[0].image
+      currentVersion = image.split(':')[1] as String
+      config = stringResource
+    }
+    try {
+      def latestVersion = gitHubApi.getLatestVersionFromAtomFeed(name)
+      return new Component(name, config, currentVersion, latestVersion)
+    } catch (Exception ex) {
+      log.debug(ex.toString())
+    }
+    return null
   }
 
   @Override
@@ -59,7 +57,5 @@ class ComponentService implements ComponentApi {
 
     def deployableComponent = gitHubApi.getDeployableComponent(name, version)
     kubectlApi.apply(deployableComponent)
-    // update cache with current component state
-    getComponent(name, false)
   }
 }

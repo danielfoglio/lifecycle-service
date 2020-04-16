@@ -1,5 +1,6 @@
 package io.cratekube.lifecycle.service
 
+import io.cratekube.lifecycle.GitHubConfig
 import io.cratekube.lifecycle.api.GitHubApi
 import io.cratekube.lifecycle.api.exception.FailedException
 import io.cratekube.lifecycle.api.exception.NotFoundException
@@ -20,18 +21,25 @@ import static spock.util.matcher.HamcrestSupport.expect
 class GitHubServiceSpec extends Specification {
   @Subject GitHubApi subject
   Client client
+  GitHubConfig gitHubConfig
 
   def setup() {
     client = Mock()
-    subject = new GitHubService(client)
+    gitHubConfig = new GitHubConfig('https://github.com/cratekube', 'https://raw.githubusercontent.com/cratekube')
+    subject = new GitHubService(client, gitHubConfig)
   }
 
-  def 'should require valid contructor params'() {
+  def 'should require valid constructor params'() {
     when:
-    new GitHubService(null)
+    new GitHubService(clt, cfg)
 
     then:
     thrown RequireViolation
+
+    where:
+    clt         | cfg
+    null        | null
+    this.client | null
   }
 
   def 'getLatestVersionFromAtomFeed should require valid args'() {
@@ -47,10 +55,10 @@ class GitHubServiceSpec extends Specification {
 
   def 'getLatestVersionFromAtomFeed should return the latest version'() {
     given:
-    def feedUrl = 'https://github.com/cratekube/dropwizard-groovy-template/releases.atom'
+    def component = 'dropwizard-groovy-template'
 
     when:
-    def result = subject.getLatestVersionFromAtomFeed(feedUrl)
+    def result = subject.getLatestVersionFromAtomFeed(component)
 
     then:
     expect result, notNullValue()
@@ -59,10 +67,10 @@ class GitHubServiceSpec extends Specification {
 
   def 'getLatestVersionFromAtomFeed should error if there are no versions'() {
     given:
-    def feedUrl = 'https://github.com/danielfoglio/lifecycle-service/releases.atom'
+    def component = 'cratekube'
 
     when:
-    subject.getLatestVersionFromAtomFeed(feedUrl)
+    subject.getLatestVersionFromAtomFeed(component)
 
     then:
     thrown FailedException
@@ -88,11 +96,13 @@ class GitHubServiceSpec extends Specification {
     def component = 'test-component'
     def version = 'test-version'
     def body = 'file-content'
-    client.target(_) >> Mock(WebTarget) {
+    String deploymentFileLocation = "https://raw.githubusercontent.com/cratekube/${component}/${version}/deployment.yml"
+    client.target(deploymentFileLocation) >> Mock(WebTarget) {
       request() >> Mock(Invocation.Builder) {
         get(String) >> body
       }
     }
+
     when:
     def result = subject.getDeployableComponent(component, version)
 
@@ -105,11 +115,13 @@ class GitHubServiceSpec extends Specification {
     given:
     def component = 'test-component'
     def version = 'test-version'
-    client.target(_) >> Mock(WebTarget) {
+    String deploymentFileLocation = "https://raw.githubusercontent.com/cratekube/${component}/${version}/deployment.yml"
+    client.target(deploymentFileLocation) >> Mock(WebTarget) {
       request() >> Mock(Invocation.Builder) {
         get(String) >> {throw new WebApplicationException()}
       }
     }
+
     when:
     subject.getDeployableComponent(component, version)
 
