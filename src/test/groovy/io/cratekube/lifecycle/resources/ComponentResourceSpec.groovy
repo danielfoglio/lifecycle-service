@@ -4,10 +4,10 @@ import io.cratekube.lifecycle.api.ComponentApi
 import io.cratekube.lifecycle.api.exception.FailedException
 import io.cratekube.lifecycle.auth.User
 import io.cratekube.lifecycle.model.Component
+import io.cratekube.lifecycle.resources.ComponentResource.ComponentVersionRequest
 import org.valid4j.errors.RequireViolation
 import spock.lang.Specification
 import spock.lang.Subject
-import io.cratekube.lifecycle.resources.ComponentResource.ComponentVersionRequest
 
 import static org.hamcrest.Matchers.endsWith
 import static org.hamcrest.Matchers.equalTo

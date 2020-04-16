@@ -40,5 +40,5 @@ spec:
       volumes:
         - name: kube-config-volume
           hostPath:
-            # directory location on host
-            path: /home/ubuntu/.kube/
+            # directory where kubeconfig is located on host
+            path: /var/lib/cratekube/

@@ -1,14 +1,16 @@
 package io.cratekube.lifecycle.service
 
 import groovy.util.logging.Slf4j
+import groovy.xml.XmlSlurper
 import io.cratekube.lifecycle.GitHubConfig
 import io.cratekube.lifecycle.api.GitHubApi
 import io.cratekube.lifecycle.api.exception.FailedException
 import io.cratekube.lifecycle.api.exception.NotFoundException
 
 import javax.inject.Inject
+import javax.ws.rs.ProcessingException
+import javax.ws.rs.WebApplicationException
 import javax.ws.rs.client.Client
-import groovy.xml.XmlSlurper
 
 import static org.hamcrest.Matchers.notNullValue
 import static org.valid4j.Assertive.require
@@ -35,7 +37,7 @@ class GitHubService implements GitHubApi {
       throw new FailedException("Cannot retrieve the latest version. There are no releases at [${component}].")
     }
     def id = latest.id.toString()
-    return id[id.lastIndexOf('/')+1..-1]
+    return id[id.lastIndexOf('/') + 1..-1]
   }
 
   @Override
@@ -46,7 +48,7 @@ class GitHubService implements GitHubApi {
     String deploymentFileLocation = "${gitHubConfig.orgBaseRawHome}/${component}/${version}/deployment.yml"
     try {
       return client.target(deploymentFileLocation).request().get(String)
-    } catch (Exception ex) {
+    } catch (ProcessingException | WebApplicationException ex) {
       log.debug(ex.toString())
       throw new NotFoundException("Cannot find deployable template for component [${component}] version [${version}].")
     }

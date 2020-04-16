@@ -2,9 +2,6 @@ package io.cratekube.lifecycle.modules
 
 import io.cratekube.lifecycle.AppConfig
 import io.cratekube.lifecycle.api.ComponentApi
-import io.cratekube.lifecycle.api.GitHubApi
-import io.cratekube.lifecycle.api.KubectlApi
-import io.cratekube.lifecycle.api.ProcessExecutor
 import ru.vyarus.dropwizard.guice.module.support.DropwizardAwareModule
 import spock.mock.DetachedMockFactory
 

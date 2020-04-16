@@ -8,8 +8,8 @@ import org.valid4j.errors.RequireViolation
 import spock.lang.Specification
 import spock.lang.Subject
 
-import static org.valid4j.matchers.ArgumentMatchers.notEmptyString
 import static org.hamcrest.Matchers.startsWith
+import static org.valid4j.matchers.ArgumentMatchers.notEmptyString
 import static spock.util.matcher.HamcrestSupport.expect
 
 class KubectlServiceSpec extends Specification {

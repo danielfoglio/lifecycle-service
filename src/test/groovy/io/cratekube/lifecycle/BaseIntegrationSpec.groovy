@@ -2,9 +2,6 @@ package io.cratekube.lifecycle
 
 import groovy.transform.Memoized
 import io.cratekube.lifecycle.api.ComponentApi
-import io.cratekube.lifecycle.api.GitHubApi
-import io.cratekube.lifecycle.api.KubectlApi
-import io.cratekube.lifecycle.api.ProcessExecutor
 import io.cratekube.lifecycle.model.Component
 import io.cratekube.lifecycle.modules.annotation.ComponentCache
 import org.spockframework.mock.MockUtil

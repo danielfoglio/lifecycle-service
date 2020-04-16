@@ -2,7 +2,6 @@ package io.cratekube.lifecycle.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import groovy.util.logging.Slf4j
-import io.cratekube.lifecycle.AppConfig
 import io.cratekube.lifecycle.api.ComponentApi
 import io.cratekube.lifecycle.api.GitHubApi
 import io.cratekube.lifecycle.api.KubectlApi
@@ -44,7 +43,7 @@ class ComponentService implements ComponentApi {
     try {
       def latestVersion = gitHubApi.getLatestVersionFromAtomFeed(name)
       return new Component(name, config, currentVersion, latestVersion)
-    } catch (Exception ex) {
+    } catch (FailedException | IOException ex) {
       log.debug(ex.toString())
     }
     return null

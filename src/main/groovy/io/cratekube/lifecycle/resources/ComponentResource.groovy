@@ -8,6 +8,8 @@ import io.cratekube.lifecycle.model.Component
 import io.cratekube.lifecycle.modules.annotation.ComponentCache
 import io.dropwizard.auth.Auth
 import io.swagger.annotations.Api
+import io.swagger.annotations.ApiImplicitParam
+import io.swagger.annotations.ApiImplicitParams
 import io.swagger.annotations.ApiParam
 
 import javax.annotation.security.RolesAllowed
@@ -88,6 +90,9 @@ class ComponentResource {
   @POST
   @RolesAllowed('admin')
   @Path('{name}/version')
+  @ApiImplicitParams(
+    @ApiImplicitParam(name = 'Authorization', value = 'API token', required = true, dataType = 'string', paramType = 'header')
+  )
   Response applyComponentVersion(
     @PathParam('name') String name,
     @ApiParam ComponentVersionRequest componentVersionRequest,

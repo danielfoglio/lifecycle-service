@@ -7,6 +7,7 @@ import io.cratekube.lifecycle.api.ProcessExecutor
 import io.cratekube.lifecycle.api.exception.FailedException
 
 import javax.inject.Inject
+import java.nio.file.Files
 
 import static org.hamcrest.Matchers.notNullValue
 import static org.valid4j.Assertive.require
@@ -27,7 +28,7 @@ class KubectlService implements KubectlApi {
   void apply(String yaml) throws FailedException {
     require yaml, notEmptyString()
 
-    def deployment = File.createTempFile('tmp', '.yml') << yaml
+    def deployment = Files.createTempFile('tmp', '.yml') << yaml
     def proc = kubectlCmd.exec("--kubeconfig ${config.kubeconfigLocation} apply -f ${deployment.path}")
     proc.waitForProcessOutput(System.out, System.err)
     if (proc.exitValue() != 0) {

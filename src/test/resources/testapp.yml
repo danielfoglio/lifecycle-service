@@ -28,6 +28,7 @@ kubeconfigLocation: ${KUBE_CONFIG_LOCATION:-/app/kube/internal-config}
 
 jobs:
   upgradeAvailabilityJob: ${JOB_EXECUTION_FREQUENCY:-10min}
+  componentDeploymentJob: ${DEPLOYMENT_JOB_EXECUTION_FREQUENCY:-5min}
 
 github:
   orgHome: ${GITHUB_ORG_HOME:-https://github.com/cratekube}

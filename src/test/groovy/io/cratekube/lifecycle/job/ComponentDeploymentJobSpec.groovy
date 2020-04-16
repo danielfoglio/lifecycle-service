@@ -9,11 +9,8 @@ import org.valid4j.errors.RequireViolation
 import spock.lang.Specification
 import spock.lang.Subject
 
-import static org.hamcrest.Matchers.hasEntry
-import static spock.util.matcher.HamcrestSupport.expect
-
-class UpgradeAvailabilityJobSpec extends Specification {
-  @Subject UpgradeAvailabilityJob subject
+class ComponentDeploymentJobSpec extends Specification {
+  @Subject ComponentDeploymentJob subject
   Map<String, Component> componentCache
   ComponentApi componentApi
   AppConfig config
@@ -21,13 +18,13 @@ class UpgradeAvailabilityJobSpec extends Specification {
   def setup() {
     componentCache = [:]
     componentApi = Mock()
-    config = new AppConfig(managedComponents: [('test-name'): true, ('test-name-2'): true])
-    subject = new UpgradeAvailabilityJob(componentCache, componentApi, config)
+    config = new AppConfig(managedComponents: [('test-name'): true, ('test-name-2'): false, ('test-name-3'): true])
+    subject = new ComponentDeploymentJob(componentCache, componentApi, config)
   }
 
   def 'should require valid constructor params'() {
     when:
-    new UpgradeAvailabilityJob(cache, comp, conf)
+    new ComponentDeploymentJob(cache, comp, conf)
 
     then:
     thrown RequireViolation
@@ -39,36 +36,44 @@ class UpgradeAvailabilityJobSpec extends Specification {
     this.componentCache | this.componentApi | null
   }
 
-  def 'doJob should update component cache'() {
+  def 'doJob should apply components'() {
     given:
-    def nm = 'test-name'
-    def curVersion = '1.0.0'
+    def curVersion = null
     def cfg = 'test-config'
     def latVersion = '1.0.1'
+
+    def nm = 'test-name'
     def component = new Component(nm, cfg, curVersion, latVersion)
-    componentApi.getComponent(_) >> component
+    componentApi.getComponent(nm) >> component
+
+    def nm3 = 'test-name-3'
+    def component3 = new Component(nm3, cfg, curVersion, latVersion)
+    componentApi.getComponent(nm3) >> component3
+
     when:
     subject.doJob(_ as  JobExecutionContext)
 
     then:
-    expect componentCache, hasEntry(nm, component)
+    2 * componentApi.applyComponent(_, _)
   }
 
-  def 'doJob should continue updating component cache on failure'() {
+  def 'doJob should continue applying components  on failure'() {
     given:
-    def nm = 'test-name'
-    def curVersion = '1.0.0'
+    def curVersion = null
     def cfg = 'test-config'
     def latVersion = '1.0.1'
-    def nm2 = 'test-name-2'
-    def component2 = new Component(nm2, cfg, curVersion, latVersion)
+
+    def nm = 'test-name'
     componentApi.getComponent(nm) >> {throw new FailedException()}
-    componentApi.getComponent(nm2) >> component2
+
+    def nm3 = 'test-name-3'
+    def component3 = new Component(nm3, cfg, curVersion, latVersion)
+    componentApi.getComponent(nm3) >> component3
 
     when:
     subject.doJob(_ as  JobExecutionContext)
 
     then:
-    expect componentCache, hasEntry(nm2, component2)
+    1 * componentApi.applyComponent(_, _)
   }
 }
