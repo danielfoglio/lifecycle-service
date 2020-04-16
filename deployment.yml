@@ -36,7 +36,7 @@ spec:
               name: kube-config-volume
           env:
             - name: KUBE_CONFIG_LOCATION
-              value: /app/kube/config
+              value: /app/kube/kubeconfig
       volumes:
         - name: kube-config-volume
           hostPath:
