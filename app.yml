@@ -24,7 +24,7 @@ auth:
       key: ${ADMIN_APIKEY:-eknvDrmcDtseeieSMTvngo}
       roles: ['admin']
 
-kubeconfigLocation: ${KUBE_CONFIG_LOCATION:-/app/kube/internal-config}
+kubeconfigLocation: ${KUBE_CONFIG_LOCATION:-/app/kube/kubeconfig}
 
 jobs:
   upgradeAvailabilityJob: ${UPGRADE_JOB_EXECUTION_FREQUENCY:-5min}
